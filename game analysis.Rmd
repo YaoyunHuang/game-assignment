@@ -1,0 +1,135 @@
+
+```{r}
+install_tinytex()
+library(dplyr)
+library(ggplot2)
+library(knitr)
+setwd("/Users/aka6208/Desktop/game assignment")
+
+#Question 1
+
+players <- read.csv("players.csv")
+sessions <- read.csv("sessions.csv")
+games <- read.csv("games.csv")
+
+players$signup_date <- as.Date(players$signup_date)
+players <- players %>%
+mutate(
+  experience_level = case_when(
+    format(signup_date, "%Y") <"2023"~ "Veteran",
+    format(signup_date, "%Y") == "2023"~ "Intermediate",
+    format(signup_date, "%Y") > "2023"~ "New"
+  )
+)
+merged_data <- sessions %>%
+  left_join(players, by = "player_id")
+
+summary_table <- merged_data %>%
+  group_by(experience_level) %>%
+  summarise(
+    number_players = n_distinct(player_id),
+    average_play_time = mean (play_time_minutes, na.rm =TRUE),
+    average_score = mean (score, na.rm = TRUE)
+  )
+kable(summary_table)
+
+
+ggplot(summary_table,
+       aes(
+         x = experience_level,
+           y = average_play_time,
+           fill = experience_level
+         )) +
+         geom_bar(stat = "identity") +
+         labs(
+           title = "Average Play Time by Experience Level",
+           x = "Experience Level", 
+           y = " Average Play Time"
+         ) +
+         theme_minimal()
+```
+```{r}
+#Question 2
+
+# Take the sessions dataframe 
+# then join the games dataframe 
+# using the common column game_id 
+  genre_data <- sessions %>%
+    left_join (games, by = "game_id")
+  
+#take the joined data
+#then group bu the data by genre 
+  genre_summary <- genre_data %>%
+  group_by (genre) %>%
+    
+ summarise(
+      
+      average_play_time = mean(play_time_minutes, na.rm = TRUE),
+      average_score = mean(score, na.rm= TRUE),
+      number_session = n(), 
+      unique_players = n_distinct(player_id)
+    )
+   kable(genre_summary)
+  ggplot(
+    genre_summary,
+    aes(
+      x=genre,
+      y=unique_players,
+      fill = genre
+    )
+  )+
+    geom_bar(stat = "identity"
+    )
+```
+```{r}
+#Question 3
+
+top_players <- sessions %>% 
+# Take the sessions dataframe 
+group_by(player_id) %>% 
+#Then group the data by player_id
+
+summarise(
+ total_play_time = sum(play_time_minutes, na.rm = TRUE)
+) %>%
+#create a summary table and calculate total play time for each player 
+
+arrange(desc(total_play_time)) %>% 
+# arrange players from highest to lowest play time 
+
+slice_head (n=10)
+# Select the top 10 players only
+
+top_player_data <- sessions %>% 
+#Take the sessions dataframe 
+
+
+filter(player_id %in% top_players$player_id)
+
+top_summary <- top_player_data %>%
+group_by(player_id) %>%
+#create summary statistics
+
+summarise(
+total_sessions = n(),
+
+average_play_time = mean(play_time_minutes, na.rm = TRUE),
+
+average_score = mean (score, na.rm=TRUE)
+)
+ggplot(
+top_player_data, 
+aes(
+x=factor(player_id),
+y=score
+)
+) +
+geom_boxplot()+
+labs(
+title = "Score Distribution of Top 10 Players",
+    x="player ID",
+    y="Score"
+) +
+
+theme_minimal()
+```
