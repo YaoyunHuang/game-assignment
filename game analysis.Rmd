@@ -1,6 +1,10 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
 
 ```{r}
-install_tinytex()
 library(dplyr)
 library(ggplot2)
 library(knitr)
@@ -132,4 +136,44 @@ title = "Score Distribution of Top 10 Players",
 ) +
 
 theme_minimal()
+```
+```{r}
+#Question 4
+players <- players %>%
+  mutate(
+    age_group = case_when(
+      age >= 16 & age <=25 ~"16-25",
+      age>= 26 & age <= 35 ~ "26-35",
+      age >= 36 & age <= 45 ~"36-45",
+      age >=46 ~"46+"
+    )
+  )
+
+age_data <- sessions %>%
+  left_join(players, by="player_id")
+#join sessions data with players data
+age_summary <- age_data %>%
+  group_by(age_group) %>%
+  summarise(
+    average_play_time=mean(play_time_minutes, na.rm =TRUE),
+    average_score=mean(score, na.rm = TRUE),
+    number_sessions = n()
+  )
+
+kable(age_summary)
+
+ggplot(age_summary,
+       aes(
+         x=age_group, 
+         y=average_play_time,
+         fill = age_group
+       )
+       )+
+  geom_bar(stat = "identity") +
+  labs(
+    title= "Average Play Time by Age Group",
+    x="Age Group",
+    y="Average Play Time"
+  )+
+  theme_minimal()
 ```
