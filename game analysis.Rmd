@@ -5,18 +5,25 @@ output:
 ---
 
 ```{r}
+#Load required libraries
 library(dplyr)
 library(ggplot2)
 library(knitr)
 setwd("/Users/aka6208/Desktop/game assignment")
 
 #Question 1
-
+# Read CSV in the file
 players <- read.csv("players.csv")
 sessions <- read.csv("sessions.csv")
 games <- read.csv("games.csv")
-
+#Then we need to check the datasets 
+head(players)
+head(sessions)
+str(players)
+str(sessions)
+#The signup_date needs to be converted into Date format
 players$signup_date <- as.Date(players$signup_date)
+#
 players <- players %>%
 mutate(
   experience_level = case_when(
