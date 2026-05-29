@@ -1,7 +1,4 @@
 ---
-output:
-  pdf_document: default
-  html_document: default
 ---
 
 ```{r}
@@ -16,25 +13,28 @@ setwd("/Users/aka6208/Desktop/game assignment")
 players <- read.csv("players.csv")
 sessions <- read.csv("sessions.csv")
 games <- read.csv("games.csv")
-#Then we need to check the datasets 
+#Then we need to check the data sets 
 head(players)
 head(sessions)
 str(players)
 str(sessions)
 #The signup_date needs to be converted into Date format
 players$signup_date <- as.Date(players$signup_date)
-#
+#create 3 required groups using format function
 players <- players %>%
 mutate(
   experience_level = case_when(
     format(signup_date, "%Y") <"2023"~ "Veteran",
     format(signup_date, "%Y") == "2023"~ "Intermediate",
     format(signup_date, "%Y") > "2023"~ "New"
+ 
   )
 )
+#then join sessions data with players data using player_id to 
 merged_data <- sessions %>%
   left_join(players, by = "player_id")
-
+#devide the groups 
+#summarise the required question by average time, score and numer of players 
 summary_table <- merged_data %>%
   group_by(experience_level) %>%
   summarise(
@@ -42,9 +42,10 @@ summary_table <- merged_data %>%
     average_play_time = mean (play_time_minutes, na.rm =TRUE),
     average_score = mean (score, na.rm = TRUE)
   )
+#display the summary table 
 kable(summary_table)
 
-
+#visulise average play time by experience level
 ggplot(summary_table,
        aes(
          x = experience_level,
@@ -58,6 +59,7 @@ ggplot(summary_table,
            y = " Average Play Time"
          ) +
          theme_minimal()
+#finding: The results shows the New players had higher average play time and medium scores, which means they are very inetrested in the game and put a lot time 
 ```
 ```{r}
 #Question 2
