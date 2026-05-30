@@ -10,9 +10,9 @@ setwd("/Users/aka6208/Desktop/game assignment")
 
 #Question 1
 
-#Task 1 aims to analyse the average scores across the 3 devided groups such as Veteran, Intermediate, and New players, which indicates whether age is associated with age player scores.
+#Task 1 aims to analyse the average scores across the 3 devided groups such as Veteran, Intermediate, and New players, which explores whether the players age is associated with age player scores.
 
-#The sessions data contains players scores and players data has the age or demographic and ID information, then it uses the left join function using play_id in players.csv to add in the sessions. 
+#The sessions csv contains players scores and the age or demographic and ID information, then I use read.csv() and head(), str() to check the data has been imported correctly or the structure and data types. Then it uses the left join function using play_id in players.csv to add in the sessions. After, use mutate() and summary(),left_join() to create new needed column and calculate the required result for each group.
 
 # Read CSV in the file
 players <- read.csv("players.csv")
@@ -23,10 +23,10 @@ head(players)
 head(sessions)
 str(players)
 str(sessions)
-#The signup_date needs to be converted into Date format
+#The signup_date needs to be converted into Date format from / to -
 players$signup_date <- as.Date(players$signup_date)
 
-#create 3 required groups using format function in a new column
+#Create 3 required groups using format function in a new column, case_when() can test each year.
 players <- players %>%
 mutate(
   experience_level = case_when(
@@ -36,11 +36,14 @@ mutate(
  
   )
 )
-#then join sessions data with players data using player_id to 
+#then join sessions data with players data using player_id in players to sessions dataframe 
+
 merged_data <- sessions %>%
   left_join(players, by = "player_id")
+
 #devide the groups 
 #summarise the required question by average time, score and numer of players 
+
 summary_table <- merged_data %>%
   group_by(experience_level) %>%
   summarise(
@@ -48,6 +51,7 @@ summary_table <- merged_data %>%
     average_play_time = mean (play_time_minutes, na.rm =TRUE),
     average_score = mean (score, na.rm = TRUE)
   )
+
 #display the summary table 
 kable(summary_table)
 
@@ -65,12 +69,12 @@ ggplot(summary_table,
            y = " Average Play Time"
          ) +
          theme_minimal()
-#finding: The results shows the New players recorded the highest average time and followed by Vetaran players, and the Veteran achieved higher scores with the figure of 501.04 points, which means more experience may lead to better performance.
+#Finding: The results shows the New players recorded the highest average time and followed by Vetaran players, but the Veteran achieved higher scores than the New one with the figure of 501.04 points, which means more experience may lead to better performance.
 ```
 ```{r}
 #Question 2
 
-#The task 2 aims to analyse player engagement across various game genres and the relationship between the variables in the kable, 
+#The task 2 aims to analyse player engagement across various game genres and the relationship between the variables in the result. 
 #Rationale : First we need to combine the genre column from game information  with session records, then we divide groups by the genre, then use summarise function to calculate key statistics for each genre, which make a summary of total genre.
 
 # Take the sessions dataframe 
