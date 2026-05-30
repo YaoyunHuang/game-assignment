@@ -9,6 +9,11 @@ library(knitr)
 setwd("/Users/aka6208/Desktop/game assignment")
 
 #Question 1
+
+#Task 1 aims to analyse the average scores across the 3 devided groups such as Veteran, Intermediate, and New players, which indicates whether age is associated with age player scores.
+
+#The sessions data contains players scores and players data has the age or demographic and ID information, then it uses the left join function using play_id in players.csv to add in the sessions. 
+
 # Read CSV in the file
 players <- read.csv("players.csv")
 sessions <- read.csv("sessions.csv")
@@ -20,7 +25,8 @@ str(players)
 str(sessions)
 #The signup_date needs to be converted into Date format
 players$signup_date <- as.Date(players$signup_date)
-#create 3 required groups using format function
+
+#create 3 required groups using format function in a new column
 players <- players %>%
 mutate(
   experience_level = case_when(
@@ -59,10 +65,13 @@ ggplot(summary_table,
            y = " Average Play Time"
          ) +
          theme_minimal()
-#finding: The results shows the New players had higher average play time and medium scores, which means they are very inetrested in the game and put a lot time 
+#finding: The results shows the New players recorded the highest average time and followed by Vetaran players, and the Veteran achieved higher scores with the figure of 501.04 points, which means more experience may lead to better performance.
 ```
 ```{r}
 #Question 2
+
+#The task 2 aims to analyse player engagement across various game genres and the relationship between the variables in the kable, 
+#Rationale : First we need to combine the genre column from game information  with session records, then we divide groups by the genre, then use summarise function to calculate key statistics for each genre, which make a summary of total genre.
 
 # Take the sessions dataframe 
 # then join the games dataframe 
@@ -74,16 +83,18 @@ ggplot(summary_table,
 #then group bu the data by genre 
   genre_summary <- genre_data %>%
   group_by (genre) %>%
-    
+
+  #calculate required variables, such as average play game, score, and the number of sessions, and unique players
  summarise(
-      
       average_play_time = mean(play_time_minutes, na.rm = TRUE),
       average_score = mean(score, na.rm= TRUE),
       number_session = n(), 
       unique_players = n_distinct(player_id)
     )
+  #display the summary table
    kable(genre_summary)
-  ggplot(
+ 
+    ggplot(
     genre_summary,
     aes(
       x=genre,
@@ -91,27 +102,36 @@ ggplot(summary_table,
       fill = genre
     )
   )+
-    geom_bar(stat = "identity"
-    )
+    geom_bar(stat = "identity")+ 
+    labs(
+      title = "Number of unique Players by Genre",
+      x= "Genre",
+      y= "Number of Unique Players"
+    ) +
+    theme_minimal()
+    #finding: The rsult show that Puzzle was the most popular genre, recording the highest number if unique players(3606) and the highest number of sessions (6371). However, in terms of engagement and performance, the Strategy games recorded the highest average play time of 92.88 minutes per session, and the sports games achieved the highest average score of 503.38 points. Overall, Puzzle appear to be the most polular, and Strategy and Sports appear to be the most engaging genres.
 ```
 ```{r}
 #Question 3
+# Task explanation: The task 3 aims to analyse the gaming behaviour among the top 10 players identified based on total play time across all sessions. Then analyse the total number of sessions, average play time, and average score.
 
-top_players <- sessions %>% 
 # Take the sessions dataframe 
+top_players <- sessions %>% 
+
 group_by(player_id) %>% 
 #Then group the data by player_id
 
+#create a summary table and calculate total play time for each player 
 summarise(
  total_play_time = sum(play_time_minutes, na.rm = TRUE)
 ) %>%
-#create a summary table and calculate total play time for each player 
 
-arrange(desc(total_play_time)) %>% 
 # arrange players from highest to lowest play time 
+arrange(desc(total_play_time)) %>% 
 
-slice_head (n=10)
 # Select the top 10 players only
+slice_head (n=10)
+
 
 top_player_data <- sessions %>% 
 #Take the sessions dataframe 
@@ -123,6 +143,7 @@ top_summary <- top_player_data %>%
 group_by(player_id) %>%
 #create summary statistics
 
+  
 summarise(
 total_sessions = n(),
 
@@ -130,6 +151,11 @@ average_play_time = mean(play_time_minutes, na.rm = TRUE),
 
 average_score = mean (score, na.rm=TRUE)
 )
+kable(top_summary, caption = "Top 10 Players and the Behaviour"
+)
+
+# visulise the score distribution of the top 10 players
+
 ggplot(
 top_player_data, 
 aes(
@@ -145,9 +171,13 @@ title = "Score Distribution of Top 10 Players",
 ) +
 
 theme_minimal()
+#analysis: The player 3332 achieved the highest average play time of 133.11 minutes per session, followed closely by player 3391 and 3812 with average play times above 129 minutes, in terms of performance, player 2447 recorded the highest average score of 617.69 points, exceeding 528 points on average. Moreover, the boxplot shows that there is no significant correlation between play time and scores. 
 ```
 ```{r}
 #Question 4
+#Task explanation: Q4 aims to investigate whether gaming behaviour differs across age group.For each age group, the average play time, average score and number of sessions can be analysed with corresponding age group.
+
+# First, we need to create the age groups and create the variables players, then use case when and mutate to create new column.
 players <- players %>%
   mutate(
     age_group = case_when(
@@ -157,9 +187,10 @@ players <- players %>%
       age >=46 ~"46+"
     )
   )
-
+#join data into a new tablet and use group by to devide various grous and use summarise to calculate each group result.
 age_data <- sessions %>%
   left_join(players, by="player_id")
+
 #join sessions data with players data
 age_summary <- age_data %>%
   group_by(age_group) %>%
@@ -168,7 +199,7 @@ age_summary <- age_data %>%
     average_score=mean(score, na.rm = TRUE),
     number_sessions = n()
   )
-
+#display table 
 kable(age_summary)
 
 ggplot(age_summary,
@@ -185,4 +216,5 @@ ggplot(age_summary,
     y="Average Play Time"
   )+
   theme_minimal()
+# Findings: According the age groups, we can see the older people tend to play more time and more sessions with the highest figure of play time (93.11298) and numer_sessions of 6293. In Contrast, the yougest group play the least time and sessions.However, in terms of performance, they don't have obvious wide gap. Between 26-35 and 36-45, the 2 grous showed similar levels of engagement and performance. 
 ```
